@@ -1,0 +1,25 @@
+### REGISTER
+POST http://localhost:3000/api/v1/auth/register
+Content-Type: application/json
+
+{
+    "name":"fahmi",
+    "email":"achmadfahmialhafidz20@gmail.com",
+    "password":"fahmi123",
+    "password_confirmation":"fahmi123"
+}
+
+
+### LOGIN
+POST http://localhost:3000/api/v1/auth/login
+Content-Type: application/json
+
+{
+    "email":"achmadfahmialhafidz20@gmail.com",
+    "password":"fahmi123"
+}
+
+
+###
+GET http://localhost:3000/api/v1/auth/whoami
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNjk5ODczODI3fQ.rscNZuGnq-HLQ5gKJQv_FEj92Kp-xXg5CrqaEF3Ft2M
