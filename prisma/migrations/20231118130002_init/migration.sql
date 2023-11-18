@@ -1,6 +1,6 @@
 -- CreateTable
 CREATE TABLE "User" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" TEXT,
     "email" TEXT,
     "password" TEXT,
@@ -10,10 +10,10 @@ CREATE TABLE "User" (
 
 -- CreateTable
 CREATE TABLE "Notifications" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "content" TEXT NOT NULL,
-    "user_id" TEXT NOT NULL,
+    "user_id" INTEGER NOT NULL,
 
     CONSTRAINT "Notifications_pkey" PRIMARY KEY ("id")
 );
