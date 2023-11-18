@@ -1,23 +1,22 @@
-const router = require("express").Router();
+const authRouter = require("express").Router();
 const {
   register,
   login,
   whoami,
-  activate,
+  forgotPassword,
+  resetPassword,
+  deleteAllUser,
 } = require("../controllers/auth.controllers");
 const { restrict } = require("../middlewares/auth.middlewares");
 
-router.post("/register", register);
-router.post("/login", login);
-router.get("/whoami", restrict, whoami);
+// user
+authRouter.delete("/auth/delete-all", deleteAllUser);
+authRouter.post("/whoami", restrict, whoami);
 
-// render halaman aktivasi email
-router.get("/email-activation", (req, res) => {
-  let { token } = req.query;
-  res.render("email-activation", { token });
-});
+// auth
+authRouter.post("/auth/register", register);
+authRouter.post("/auth/login", login);
+authRouter.post("/auth/forgot-password", forgotPassword);
+authRouter.post("/auth/reset-password", restrict, resetPassword);
 
-// update user.is-verified
-router.post("/email-activation", activate);
-
-module.exports = router;
+module.exports = authRouter;

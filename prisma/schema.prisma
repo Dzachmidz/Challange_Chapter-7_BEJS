@@ -11,9 +11,17 @@ datasource db {
 }
 
 model User {
-  id          Int     @id @default(autoincrement())
-  name        String?
-  email       String  @unique
-  password    String
-  is_verified Boolean @default(false)
+  id            String          @id @default(uuid())
+  name          String?
+  email         String?         @unique
+  password      String?
+  notifications Notifications[]
+}
+
+model Notifications {
+  id      String @id @default(uuid())
+  title   String
+  content String
+  user    User   @relation(fields: [user_id], references: [id])
+  user_id String
 }
