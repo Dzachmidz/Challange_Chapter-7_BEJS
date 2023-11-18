@@ -2,107 +2,86 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const nodemailer = require("../utils/nodemailer");
+const { sendEmail, getHtml } = require("../utils/nodemailer");
 const { JWT_SECRET_KEY } = process.env;
 
 module.exports = {
   register: async (req, res, next) => {
     try {
-      let { name, email, password, password_confirmation } = req.body;
-      if (password != password_confirmation) {
+      const { name, email, password, confirm_password } = req.body;
+
+      const existUser = await prisma.user.findUnique({ where: { email } });
+
+      if (existUser) {
         return res.status(400).json({
           status: false,
           message: "Bad Request",
-          err: "please ensure that the password and password confirmation match!",
-          data: null,
+          error: "Email already exists",
         });
       }
 
-      let userExist = await prisma.user.findUnique({ where: { email } });
-      if (userExist) {
+      if (password !== confirm_password) {
         return res.status(400).json({
           status: false,
           message: "Bad Request",
-          err: "user has already been used!",
-          data: null,
+          error: "Password does not match",
         });
       }
 
-      let encryptedPassword = await bcrypt.hash(password, 10);
-      let user = await prisma.user.create({
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      await prisma.user.create({
         data: {
           name,
           email,
-          password: encryptedPassword,
+          password: hashedPassword,
+          notifications: {
+            create: {
+              title: `Halo ${name}!`,
+              content: "Selamat datang di aplikasi ini!",
+            },
+          },
         },
       });
 
-      // kirim email
-      let token = jwt.sign({ email: user.email }, JWT_SECRET_KEY);
-      let url = `http://localhost:3000/api/v1/auth/email-activation?token=${token}`;
-
-      const html = await nodemailer.getHtml("activation-email.ejs", {
-        name,
-        url,
-      });
-      nodemailer.sendEmail(email, " Email Activation", html);
-
-      return res.status(201).json({
-        status: true,
-        message: "Created",
-        err: null,
-        data: { user },
-      });
-    } catch (err) {
-      next(err);
+      res.redirect("/login");
+    } catch (error) {
+      next(error);
     }
   },
 
   login: async (req, res, next) => {
     try {
-      let { email, password } = req.body;
+      const { email, password } = req.body;
 
-      let user = await prisma.user.findUnique({ where: { email } });
+      const user = await prisma.user.findUnique({ where: { email } });
+
       if (!user) {
         return res.status(400).json({
           status: false,
           message: "Bad Request",
-          err: "invalid email or password!",
-          data: null,
+          error: "Invalid Email or Password",
         });
       }
 
-      let isPasswordCorrect = await bcrypt.compare(password, user.password);
-      if (!isPasswordCorrect) {
+      const decryptedPassword = await bcrypt.compare(password, user.password);
+
+      if (!decryptedPassword) {
         return res.status(400).json({
           status: false,
           message: "Bad Request",
-          err: "invalid email or password!",
-          data: null,
+          error: "Invalid Email or Password",
         });
       }
 
-      let token = jwt.sign({ id: user.id }, JWT_SECRET_KEY);
+      const token = jwt.sign({ id: user.id }, JWT_SECRET_KEY);
 
-      return res.status(200).json({
-        status: true,
-        message: "OK",
-        err: null,
-        data: { user, token },
-      });
-    } catch (err) {
-      next(err);
+      res.redirect(`/home?token=${token}`);
+    } catch (error) {
+      next(error);
     }
   },
 
-  whoami: (req, res, next) => {
-    return res.status(200).json({
-      status: true,
-      message: "OK",
-      err: null,
-      data: { user: req.user },
-    });
-  },
 
   forgotPassword: async (req, res, next) => {
     try {
@@ -117,10 +96,10 @@ module.exports = {
         });
       }
 
-      const token = jwt.sign({ id: user.id }, JWT_SECRET);
+      const token = jwt.sign({ id: user.id }, JWT_SECRET_KEY);
       const url = `http://localhost:3000/reset-password?token=${token}`;
 
-      const html = await getHTML("forgot.ejs", {
+      const html = await getHtml("forgot.ejs", {
         name: user.name,
         url,
       });
@@ -129,6 +108,7 @@ module.exports = {
       res.status(200).json({
         status: true,
         message: "Email sent",
+        data: url
       });
     } catch (error) {
       next(error);

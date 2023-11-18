@@ -54,29 +54,13 @@ io.on('connection', (client) => {
       io.emit('chat message', `${client.username}: ${msg}`);
   });
 });
-
-
-app.get("/", (req, res) => {
-  return res.json({
-    status: true,
-    message: "Hello World!",
-    error: null,
-    data: null,
-  });
-});
-
 app.use((req, res, next) => {
   req.io = io;
   next();
 });
 
-app.use((req, res, next) => {
-  req.io = io;
-  next();
-});
-
-app.use("/", authRouter);
-app.use("/api", htmlRouter);
+app.use("/", htmlRouter);
+app.use("/api", authRouter);
 
 app.use(Sentry.Handlers.errorHandler());
 app.use(notFoundHandler);

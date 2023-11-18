@@ -19,14 +19,15 @@ module.exports = {
       error: err.message,
     });
   },
-  restrict: (req, res, next) => {
-    let { authorization } = req.headers;
+
+  restrict: async (req, res, next) => {
+    const authorization = req.query.token;
+
     if (!authorization) {
       return res.status(401).json({
         status: false,
         message: "Unauthorized",
-        err: "missing token on header!",
-        data: null,
+        error: "Token not found",
       });
     }
 
@@ -35,20 +36,22 @@ module.exports = {
         return res.status(401).json({
           status: false,
           message: "Unauthorized",
-          err: err.message,
-          data: null,
+          error: err.message,
         });
       }
 
-      req.user = await prisma.user.findUnique({ where: { id: decoded.id } });
-      if (!req.user.is_verified) {
-        return res.status(401).json({
-          status: false,
-          message: "Unauthorized",
-          err: "you need to verify your email account first to continue",
-          data: null,
-        });
-      }
+      req.user = await prisma.user.findUnique({
+        where: {
+          id: decoded.id,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          password: true,
+          notifications: true,
+        },
+      });
       next();
     });
   },

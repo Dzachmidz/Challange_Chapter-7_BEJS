@@ -2,7 +2,6 @@ const authRouter = require("express").Router();
 const {
   register,
   login,
-  whoami,
   forgotPassword,
   resetPassword,
   deleteAllUser,
@@ -10,8 +9,7 @@ const {
 const { restrict } = require("../middlewares/auth.middlewares");
 
 // user
-authRouter.delete("/auth/delete-all", deleteAllUser);
-authRouter.post("/whoami", restrict, whoami);
+authRouter.delete("/user/delete-all", deleteAllUser);
 
 // auth
 authRouter.post("/auth/register", register);
