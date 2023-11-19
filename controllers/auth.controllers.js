@@ -8,7 +8,7 @@ const { JWT_SECRET_KEY } = process.env;
 module.exports = {
   register: async (req, res, next) => {
     try {
-      const { name, email, password, confirm_password } = req.body;
+      const { name, email, password, password_confirmation } = req.body;
 
       const existUser = await prisma.user.findUnique({ where: { email } });
 
@@ -20,11 +20,11 @@ module.exports = {
         });
       }
 
-      if (password !== confirm_password) {
+      if (password !== password_confirmation) {
         return res.status(400).json({
           status: false,
           message: "Bad Request",
-          error: "Password does not match",
+          error: "Password do not match",
         });
       }
 
@@ -38,7 +38,7 @@ module.exports = {
           notifications: {
             create: {
               title: `Halo ${name}!`,
-              content: "Selamat datang di aplikasi ini!",
+              content: "welcome to my simple application !",
             },
           },
         },
@@ -107,7 +107,7 @@ module.exports = {
 
       res.status(200).json({
         status: true,
-        message: "Email sent",
+        message: "The email has been sent to the recipient",
         data: url
       });
     } catch (error) {
@@ -118,13 +118,13 @@ module.exports = {
   resetPassword: async (req, res, next) => {
     try {
       const user = req.user;
-      const { new_password, new_confirm_password } = req.body;
+      const { new_password, new_password_confirmation } = req.body;
 
-      if (new_password !== new_confirm_password) {
+      if (new_password !== new_password_confirmation) {
         return res.status(400).json({
           status: false,
           message: "Bad Request",
-          error: "New Password does not match",
+          error: "The new password is not the same",
         });
       }
 
@@ -142,7 +142,7 @@ module.exports = {
       const notifications = await prisma.notifications.create({
         data: {
           title: `Pembaharuan Password`,
-          content: "Password Anda telah diperbaharui! Jangan sampai lupa lagi!",
+          content: "The new password has been updated successfully, in the future, be more careful in remembering the password!",
           user_id: user.id,
         },
         select: {
@@ -155,23 +155,10 @@ module.exports = {
 
       res.status(200).json({
         status: true,
-        message: "Password updated",
+        message: "Password successfull updated",
       });
     } catch (error) {
       next(error);
     }
-  },
-
-  deleteAllUser: async (req, res, next) => {
-    try {
-      await prisma.user.deleteMany();
-
-      res.status(200).json({
-        status: true,
-        message: "All user deleted",
-      });
-    } catch (error) {
-      next(error);
-    }
-  },
+  }
 };

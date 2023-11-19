@@ -4,12 +4,8 @@ const {
   login,
   forgotPassword,
   resetPassword,
-  deleteAllUser,
 } = require("../controllers/auth.controllers");
 const { restrict } = require("../middlewares/auth.middlewares");
-
-// user
-authRouter.delete("/user/delete-all", deleteAllUser);
 
 // auth
 authRouter.post("/auth/register", register);
